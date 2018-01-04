@@ -1,6 +1,6 @@
 # Login & Registration Module with Laravel 5.4, AngularJS 1.5.11, JWT authentication 1.0.0-beta.3v and Satellizer 0.15.5
 
-**This example is totaly responsive and can be tested on phones, tablets, desktops.**
+**This example is totaly responsive and can be tested on phones, tablets and desktops.**
 
 **Note:** when downloding this example you need to execute this command line from the project folder:
 
