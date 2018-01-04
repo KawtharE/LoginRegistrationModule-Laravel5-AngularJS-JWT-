@@ -1,0 +1,42 @@
+body {
+    padding-top: 90px;
+    background-color: #90A4AE;
+}
+.panel {
+	position: relative;
+	padding: 10%;
+	background-color: #ECEFF1;
+}
+.scrollable {
+	overflow-y: scroll;
+    max-height:200px;
+}
+.panel-logreg {
+	border-color: #ccc;
+	-webkit-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+	-moz-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+	box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+}
+.auth-link {
+  display: block;
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 33px; 
+}
+.btn {
+  border-radius: 5px;
+  transition: all 0.1s ease; 
+}
+.btn:hover {
+  -webkit-transform: scale(1.2);
+          transform: scale(1.2); 
+}
+.btn-with-icon {
+	margin-right: 11px;
+}
+.logout {
+	position: absolute;
+    top: 1%;
+    right: 1%;
+    border-radius: 50%;
+}

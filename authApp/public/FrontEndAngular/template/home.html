@@ -1,0 +1,16 @@
+<div class="panel-heading" ng-cloak>
+	<p ng-show="authenticated" class="auth-link btn btn-block">Welcome <strong>{{connectedUser.firstName}} {{connectedUser.lastName}}</strong></p>
+	<span class="btn btn-danger glyphicon glyphicon-off logout" ng-click="hm.logout()"></span>
+</div>
+<div class="panel-body" ng-cloak>
+    <button type="submit" class="btn btn-info btn-block" ng-click="hm.getAllUsers()" ng-cloak><span class="glyphicon glyphicon-th-list btn-with-icon"></span> See who is already registred</button>
+    <br/>
+    <div class="scrollable">
+	    <ul ng-repeat="user in hm.users">
+	    	<li><h5>{{user.firstName}} {{user.lastName}}
+	    		<br/>
+	    		<small><strong>Contact: </strong><a href="mailto:#">{{user.email}}</a></small></h5>
+	    	</li>
+	    </ul>
+    </div>	
+</div>
