@@ -1,1 +1,1 @@
-# LoginRegistrationModule-Laravel5-AngularJS-JWT-
+# Login-Registration Module with Laravel 5.4, AngularJS and JWT authentication
