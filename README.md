@@ -184,7 +184,17 @@ and implement the JWT classe:
           
 ###### c- create the master.php file:
   
-   This file should placed in **resources/views** and it will be the base file of our template. It should contain all CSS      and JS files and essentially it hosts the **<ui-view></ui-view>** element.
+   This file should be placed in **resources/views** and it will be the base file of our template. It should contain all CSS    and JS files and essentially it hosts the **ui-view** tag.
+   
+       <div class="container">
+         <div class="row">
+          <div class="col-xs-10 col-sm-8 col-md-8 col-lg-6 col-xs-offset-1 col-sm-offset-2 col-md-offset-2 col-lg-offset-3">
+	   <div class="panel panel-logreg">
+	      <ui-view></ui-view>
+	   </div>			
+          </div>
+         </div>
+       </div>
    
 ###### d- create the js/app.js, templates/login.html, templates/registration.html, templates/home.html, js/LoginController.js, js/RegistrationController.js, js/HomeController.js
 
