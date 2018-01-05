@@ -11,7 +11,7 @@
 ## The implemented functions in this example:
 ##### 1- Login.
 ##### 2- Registration.
-##### 3- Listing users who have already sign up.
+##### 3- Listing users who have already signed up.
 
 ## Steps
 #### 1- Install local development environment:
