@@ -189,20 +189,199 @@ and implement the JWT classe:
        <div class="container">
          <div class="row">
           <div class="col-xs-10 col-sm-8 col-md-8 col-lg-6 col-xs-offset-1 col-sm-offset-2 col-md-offset-2 col-lg-offset-3">
-	   <div class="panel panel-logreg">
-	      <ui-view></ui-view>
-	   </div>			
+	 	<div class="panel panel-logreg">
+	    		<ui-view></ui-view>
+	 	</div>			
           </div>
          </div>
        </div>
    
 ###### d- create the js/app.js, templates/login.html, templates/registration.html, templates/home.html, js/LoginController.js, js/RegistrationController.js, js/HomeController.js
 
+- **app.js:** this main js file will handle routing in the front-end side using **ui.router** ($stateProvider):
+
+		   	$stateProvider
+		            .state('login', {
+		                url: '/login',
+		                templateUrl: '/FrontEndAngular/template/login.html',
+		                controller: 'LoginController',
+		                controllerAs:'lg',
+		            })
+		            .state('registration', {
+		                url: '/registration',
+		                templateUrl: '/FrontEndAngular/template/registration.html',
+		                controller: 'RegistrationController',
+		                controllerAs:'rg',
+		            })
+		            .state('home', {
+		                url: '/home',
+		                templateUrl: '/FrontEndAngular/template/home.html',
+		                controller: 'HomeController',
+		                controllerAs:'hm',
+		            })
+			    
+- **LoginController.js:** in this file we handle the login scenario
+
+		    vm.login = function() {
+
+				var credentials = {
+					email: vm.email,
+					password: vm.password
+				} 
+
+				$auth.login(credentials).then(function() {
+				  return $http.get('api/authentUser');
+				}, function(error) {
+				  vm.loginError = true;
+				  vm.loginErrorText = error.data.error;
+				}).then(function(response) {
+				  var user = JSON.stringify(response.data.user);
+				  localStorage.setItem('user', user);
+				  $rootScope.authenticated = true;
+				  $rootScope.currentUser = response.data.user;
+				  $state.go('home');
+				}).catch(function (response) {			      
+				   console.log('Error: Login failed');
+				});
+		    }
+		    
+- **RegistrationController.js:** in this file we handle the registration scenario
+
+				  vm.register = function __register() {
+				    $auth.signup({
+				      firstName: vm.user.firstname,
+				      lastName: vm.user.lastname,
+				      age: vm.user.age,
+				      email: vm.user.email,
+				      password: vm.user.password
+				    }).then(function (response) {
+				      console.log(response);
+				      $state.go('login');
+				    }).catch(function (response) {
+				      vm.regError = true;
+				      if (response.data.email) {
+				      	vm.errorText = response.data.email;
+				      } else if (response.data.password) {
+				      	vm.errorText = response.data.password;
+				      } else if (response.data.firstName) {
+				      	vm.errorText = response.data.firstName;
+				      } else if (response.data.lastName) {
+				      	vm.errorText = response.data.lastName;
+				      } else if (response.data.age) {
+				      	vm.errorText = response.data.age;
+				      }				      
+				      console.log(response);
+				    });
+				  };
+				  
+- **HomeController.js:** in this file we handle the listing of already registered users and the logout scenarios
+
+	        vm.getAllUsers = function() {
+			  $http({
+		        method: 'POST',
+		        url: '/api/getUsers',
+		        data: 'currentUserEmail='+$rootScope.connectedUser.email,
+		        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+		      }).success(function(response){
+		        vm.users = response;
+		      }).error(function(error){
+		      	vm.error = error;
+		      });
+	        }
+	         vm.logout = function() {
+
+	              $auth.logout().then(function() {
+	                
+	                    // Remove the authenticated user from local storage
+	                    localStorage.removeItem('user');
+
+	                    // Flip authenticated to false so that we no longer
+	                    // show UI elements dependant on the user being logged in
+	                    $rootScope.authenticated = false;
+
+	                    // Remove the current user info from rootscope
+	                    $rootScope.currentUser = null;
+	                    $state.go('login');
+	              });
+	         }
+		 
+
 #### 6- Create the AuthenticationController.php for the server side development which contain the Login, Registration and extracting users data functions
+
+    public function register(RegistrationRequest $request) {
+    	$password = $request->get('password');
+    	$newUser = $this->user->create([
+    					'firstName' => $request->get('firstName'),
+    					'lastName' => $request->get('lastName'),
+    					'Age' => $request->get('age'),
+    					'email' => $request->get('email'),
+    					'password' => bcrypt($password)
+    				]);
+    	if (!$newUser) {
+          return response()->json(['failed_to_create_new_user'], 500);
+        }
+        return response()->json([
+            'token' => JWTAuth::fromUser($newUser)
+        ]);
+
+    }
+    public function login(LoginRequest $request) {
+        $credentials = $request->only('email', 'password');
+        try {
+            // verify the credentials and create a token for the user
+            if (! $token = JWTAuth::attempt($credentials)) {
+                return response()->json(['error' => 'invalid credentials'], 401);
+            }
+        } catch (JWTException $e) {
+            // something went wrong
+            return response()->json(['error' => 'could_not_create_token'], 500);
+        }
+
+        // if no errors are encountered we can return a JWT
+        return response()->json(compact('token'));
+    }
+    public function getAuthenticatedUser() {
+          try {
+
+            if (! $user = JWTAuth::parseToken()->authenticate()) {
+                return response()->json(['user_not_found'], 404);
+            }
+
+          } catch (Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+
+            return response()->json(['token_expired'], $e->getStatusCode());
+
+          } catch (Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+
+            return response()->json(['token_invalid'], $e->getStatusCode());
+
+          } catch (Tymon\JWTAuth\Exceptions\JWTException $e) {
+
+            return response()->json(['token_absent'], $e->getStatusCode());
+
+          }
+
+          // the token is valid and we have found the user via the sub claim
+          return response()->json(compact('user'));
+    }
+    public function getAllUsers(Request $request) {
+        $currentUser = $request->get('currentUserEmail');
+        $otherUsers = User::where('email', '<>', $currentUser)
+        					->orderBy('firstName')
+        					->get();
+        return $otherUsers;
+    }
+    
 #### 7- configure routes in routes/api.php
 
+	Route::post('/getUsers', 'AuthenticateController@getAllUsers');
+	Route::post('/register', 'AuthenticateController@register');
+	Route::post('/login', 'AuthenticateController@login');
+	Route::get('/authentUser', 'AuthenticateController@getAuthenticatedUser');
 
 ## Testing
+
+#### 1- Login, Registration and Listing data from server
 
 ![The Starting Screen](https://github.com/KawtharE/LoginRegistrationModule-Laravel5-AngularJS-JWT-/blob/master/assets/LoginPage.png)
 
