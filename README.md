@@ -15,7 +15,7 @@
 
 ## Steps
 #### 1- Install local development environment:
-Install local server:
+Install a local server:
 
         -WAMP: Windows,
         -LAMP: Linux,
