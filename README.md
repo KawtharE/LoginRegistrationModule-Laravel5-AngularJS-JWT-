@@ -42,8 +42,8 @@ Server requirements to start a Laravel 5.4 project:
   
 #### 3- Install Laravel 5.4 with Composer
 
-    $ cd /var/www/html *(preferably to place our project in this emplacement so that the laravel development server will be **localhost** which will make the development process easier)*
-    $ composer create-project laravel/laravel --prefer-dist authApp 5.4 *(for the last Laravel version just remove 5.4)*
+    $ cd /var/www/html
+    $ composer create-project laravel/laravel --prefer-dist authApp 5.4
     $ cd authApp
     $ php artisan serve
 
@@ -51,7 +51,7 @@ Now the laravel project is ready on **http://localhost:8000**
 
 ![The Starting Screen](https://github.com/KawtharE/LoginRegistrationModule-Laravel5-AngularJS-JWT-/blob/master/assets/LaravelStartinPage.png)
 
-**In case an Error 500 occur**, then there is some permission that need to be added:
+**In case an Error 500 occur**, then there are some permissions that need to be added:
 
     $ sudo chmod -R 755 /var/www/html/authApp
     $ sudo chmod -R 777 /var/www/html/authApp/storage
@@ -90,7 +90,7 @@ Now the laravel project is ready on **http://localhost:8000**
                
 ###### f- edit kernel.php file:
 
-   1- we need to remove the *VerifyCsrfToken* class from *$middlewareGroups* since JWT already do that, so we just comment this line:
+   1- we need to remove the *VerifyCsrfToken* class from *$middlewareGroups* since JWT already do that, so we just need to comment this line:
       
         \App\Http\Middleware\VerifyCsrfToken::class,
       
@@ -101,13 +101,13 @@ Now the laravel project is ready on **http://localhost:8000**
         
 ###### g- edit config/auth.php file:
 
-since laravel will be used to develop an api and a web app, we need to make a change in the auth.php file:
+since laravel will be used to develop an API and not a web app, we need to change the 'guard' value from 'web' to **'api'**:
 
               'default' => [
-                   'guard' => '**api**',
+                   'guard' => 'api',
                    'passwords' => 'users',
               ];
-and since we will use jwt for authentication and not token, another change have to be made:
+and since we will use JWT for authentication and not token, we need to change the 'driver' value from 'token' to **'jwt'**:
 
               'guards' => [
                   ...
@@ -116,5 +116,98 @@ and since we will use jwt for authentication and not token, another change have 
                       'provider' => 'users'
                   ]
               ]
-               
-               
+#### 4- Configure the user migration table & model
+
+###### a- the migration table:
+just inside the **up()** function we add the necessary elements:
+
+        Schema::create('users', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('firstName');
+            $table->string('lastName');
+            $table->string('Age');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->timestamps();
+        });
+
+###### b- the user model:
+we need to fill the fillable array:
+
+                protected $fillable = [
+                  'firstName', 'lastName', 'Age', 'email', 'password'
+                ];
+      
+and implement the JWT classe:
+
+            ...
+            use Tymon\JWTAuth\Contracts\JWTSubject as AuthenticatableUserContract;
+
+            class User extends Authenticatable implements AuthenticatableUserContract {
+               ...
+          
+               /**
+               * Get the identifier that will be stored in the subject claim of the JWT
+               *
+               * @return mixed
+               */
+
+              public function getJWTIdentifier()
+              {
+                  return $this->getKey();  // Eloquent model method
+              }
+
+              /**
+               * Return a key value array, containing any custom claims to be added to the JWT
+               *
+               * @return array
+               */
+              public function getJWTCustomClaims()
+              {
+                  return [];
+              }
+            }
+            
+#### 5- Setting up the Front-end: AngularJS & Satellizer
+
+###### a- create an Angular project:
+
+   Inside the **public** folder create the angular project folder:
+   
+          $ cd public
+          $ mkdir FrontEndAngular
+         
+ ###### b- Install Angular 1.5.11 and the necessary dependencies:
+ 
+          $ cd FrontEndAngular
+          $ npm install angular@1.5.11 satellizer angular-ui-router bootstrap@3
+          
+###### c- create the master.php file:
+  
+   This file should placed in **resources/views** and it will be the base file of our template. It should contain all CSS      and JS files and essentially it hosts the **<ui-view></ui-view>** element.
+   
+###### d- create the js/app.js, templates/login.html, templates/registration.html, templates/home.html, js/LoginController.js, js/RegistrationController.js, js/HomeController.js
+
+#### 6- Create the AuthenticationController.php for the server side development which contain the Login, Registration and extracting users data functions
+#### 7- configure routes in routes/api.php
+
+
+## Testing
+
+![The Starting Screen](https://github.com/KawtharE/LoginRegistrationModule-Laravel5-AngularJS-JWT-/blob/master/assets/LoginPage.png)
+
+![The Starting Screen](https://github.com/KawtharE/LoginRegistrationModule-Laravel5-AngularJS-JWT-/blob/master/assets/RegistrationPage.png)
+
+![The Starting Screen](https://github.com/KawtharE/LoginRegistrationModule-Laravel5-AngularJS-JWT-/blob/master/assets/HomePage1.png)
+
+![The Starting Screen](https://github.com/KawtharE/LoginRegistrationModule-Laravel5-AngularJS-JWT-/blob/master/assets/HomePage2.png)
+
+#### 2- Error handling
+
+![The Starting Screen](https://github.com/KawtharE/LoginRegistrationModule-Laravel5-AngularJS-JWT-/blob/master/assets/LoginPageError.png)
+
+![The Starting Screen](https://github.com/KawtharE/LoginRegistrationModule-Laravel5-AngularJS-JWT-/blob/master/assets/RegistrationError1.png)
+
+![The Starting Screen](https://github.com/KawtharE/LoginRegistrationModule-Laravel5-AngularJS-JWT-/blob/master/assets/RegistrationError2.png)
+
+![The Starting Screen](https://github.com/KawtharE/LoginRegistrationModule-Laravel5-AngularJS-JWT-/blob/master/assets/RegistrationError3.png)
